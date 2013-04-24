@@ -92,13 +92,13 @@ $(INTERMEDIATE_PATH)/cuda/:
 	mkdir -p $(INTERMEDIATE_PATH)/cuda
 
 $(INTERMEDIATE_PATH)/cuda/device.o: $(SOURCE_PATH)/cuda/device.cpp $(INTERMEDIATE_PATH)/cuda/
-	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(INTERMEDIATE_PATH)/cuda/random.o: $(SOURCE_PATH)/cuda/random.cpp $(INTERMEDIATE_PATH)/cuda/
-	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(INTERMEDIATE_PATH)/generate_randoms.o: $(SOURCE_PATH)/generate_randoms.cpp
-	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o $(INTERMEDIATE_PATH)/cuda/random.o $(INTERMEDIATE_PATH)/cuda/device.o
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
