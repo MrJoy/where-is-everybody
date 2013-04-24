@@ -52,11 +52,17 @@ int main(int argc, char **argv) //int argc, char **argv
   const char* SHOW_ALL_PARAM_NAME="--all";
   const int SHOW_ALL_PARAM_SIZE=strlen(SHOW_ALL_PARAM_NAME);
 
+  const char* QUIET_PARAM_NAME="--quiet";
+  const int QUIET_PARAM_SIZE=strlen(QUIET_PARAM_NAME);
+
   try {
     unsigned long numSamples = NUM_SAMPLES;
     unsigned long seed=0;
     int numBlocks=1;
-    bool showFirst = false, showLast = false, showAll = true, explicitShowAll = false;
+    bool  showFirst = false, explicitShowFirst = false,
+          showLast = false, explicitShowLast = false,
+          showAll = true, explicitShowAll = false,
+          quiet = false;
 
     for(int argIdx = 1; argIdx < argc; argIdx++) {
       if(strncmp(SEED_PARAM_NAME, argv[argIdx], SEED_PARAM_SIZE) == 0) {
@@ -70,17 +76,30 @@ int main(int argc, char **argv) //int argc, char **argv
         sscanf(paramValue, "%d", &numBlocks);
       } else if(strncmp(SHOW_FIRST_PARAM_NAME, argv[argIdx], SHOW_FIRST_PARAM_SIZE) == 0) {
         showFirst = true;
+        explicitShowFirst = true;
         if(!explicitShowAll) {
           showAll = false;
         }
       } else if(strncmp(SHOW_LAST_PARAM_NAME, argv[argIdx], SHOW_LAST_PARAM_SIZE) == 0) {
         showLast = true;
+        explicitShowLast = true;
         if(!explicitShowAll) {
           showAll = false;
         }
       } else if(strncmp(SHOW_ALL_PARAM_NAME, argv[argIdx], SHOW_ALL_PARAM_SIZE) == 0) {
         showAll = true;
         explicitShowAll = true;
+      } else if(strncmp(QUIET_PARAM_NAME, argv[argIdx], QUIET_PARAM_SIZE) == 0) {
+        quiet = true;
+        if(!explicitShowAll) {
+          showAll = false;
+        }
+        if(!explicitShowFirst) {
+          showFirst = false;
+        }
+        if(!explicitShowLast) {
+          showLast = false;
+        }
       }
     }
 
@@ -91,13 +110,17 @@ int main(int argc, char **argv) //int argc, char **argv
     // Generate random seed.
     ///////////////////////////////////////////////////////////////////////////
     if(seed == 0) {
-      std::cerr << "Generating random seed." << std::endl;
+      if(!quiet) {
+        std::cerr << "Generating random seed." << std::endl;
+      }
       FILE* randomSource = fopen("/dev/random", "rb");
       int recordsRead = fread(&seed, sizeof(unsigned long), 1, randomSource);
       assert(recordsRead == 1);
       fclose(randomSource);
     }
-    std::cerr << "Using seed: " << seed << std::endl;
+    if(!quiet) {
+      std::cerr << "Using seed: " << seed << std::endl;
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -105,7 +128,9 @@ int main(int argc, char **argv) //int argc, char **argv
     ///////////////////////////////////////////////////////////////////////////
     WIE::Device* device = new WIE::Device();
     WIE::Random* rng = new WIE::Random(*device, seed, numSamples);
-    std::cerr << "Generating " << numBlocks << " block(s) of " << numSamples << " samples." << std::endl;
+    if(!quiet) {
+      std::cerr << "Generating " << numBlocks << " block(s) of " << numSamples << " samples." << std::endl;
+    }
     float *samples = new float[numSamples];
 
 
