@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <cassert>
 #include <cstring>
+#include <cstdio>
 #include <stdexcept>
 #include <iostream>
 
