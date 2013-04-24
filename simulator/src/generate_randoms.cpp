@@ -38,13 +38,20 @@ int main() //int argc, char **argv
     // TODO: Use clock or some such for random seed, unless specified on CLI...
     // TODO: Parameterize NUM_SAMPLES...
     // TODO: Divide the work among available (selected) devices.
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Generate random seed.
+    ///////////////////////////////////////////////////////////////////////////
+    FILE* randomSource = fopen("/dev/random", "rb");
+    unsigned long seed;
+    assert(fread(&seed, sizeof(unsigned long), 1, randomSource) == 1);
+    fclose(randomSource);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Instantiate relevant objects / allocate memory in host RAM.
+    ///////////////////////////////////////////////////////////////////////////
     CUDA::Device *device = new CUDA::Device();
-    CUDA::Random *wrapper = new CUDA::Random(device, 12345, NUM_SAMPLES);
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Allocate sample array in host RAM.
-    ///////////////////////////////////////////////////////////////////////////
+    CUDA::Random *wrapper = new CUDA::Random(device, seed, NUM_SAMPLES);
     float *samples = (float *)malloc(NUM_SAMPLES * sizeof(float));
     assert(samples);
 
