@@ -1,0 +1,4 @@
+/simulator/tmp/*
+!/simulator/tmp/.gitkeep
+/simulator/bin/*
+!/simulator/bin/.gitkeep
