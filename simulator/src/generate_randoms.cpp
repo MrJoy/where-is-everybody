@@ -52,7 +52,7 @@ int main() //int argc, char **argv
     ///////////////////////////////////////////////////////////////////////////
     CUDA::Device *device = new CUDA::Device();
     CUDA::Random *wrapper = new CUDA::Random(device, seed, NUM_SAMPLES);
-    float *samples = (float *)malloc(NUM_SAMPLES * sizeof(float));
+    float *samples = new float[NUM_SAMPLES];
     assert(samples);
 
 
@@ -81,7 +81,7 @@ int main() //int argc, char **argv
     // cleanup(&curandGenerator, &hSamples, &dSamples);
     delete wrapper;
     delete device;
-    free(samples);
+    delete samples;
   } catch (runtime_error &e) {
     fprintf(stderr, "ERROR: %s\n", e.what());
     exit(1);
