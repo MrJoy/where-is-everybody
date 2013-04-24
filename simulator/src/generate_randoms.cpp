@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,43 +29,112 @@
 ///////////////////////////////////////////////////////////////////////////////
 // CLI.
 ///////////////////////////////////////////////////////////////////////////////
-int main() //int argc, char **argv
+int main(int argc, char **argv) //int argc, char **argv
 {
   using std::runtime_error;
   using std::string;
 
+  const char* SEED_PARAM_NAME="--seed=";
+  const int SEED_PARAM_SIZE=strlen(SEED_PARAM_NAME);
+
+  const char* SAMPLES_PARAM_NAME="--samples=";
+  const int SAMPLES_PARAM_SIZE=strlen(SAMPLES_PARAM_NAME);
+
+  const char* BLOCKS_PARAM_NAME="--blocks=";
+  const int BLOCKS_PARAM_SIZE=strlen(BLOCKS_PARAM_NAME);
+
+  const char* SHOW_FIRST_PARAM_NAME="--first";
+  const int SHOW_FIRST_PARAM_SIZE=strlen(SHOW_FIRST_PARAM_NAME);
+
+  const char* SHOW_LAST_PARAM_NAME="--last";
+  const int SHOW_LAST_PARAM_SIZE=strlen(SHOW_LAST_PARAM_NAME);
+
+  const char* SHOW_ALL_PARAM_NAME="--all";
+  const int SHOW_ALL_PARAM_SIZE=strlen(SHOW_ALL_PARAM_NAME);
+
   try {
+    unsigned long numSamples = NUM_SAMPLES;
+    unsigned long seed=0;
+    int numBlocks=1;
+    bool showFirst = false, showLast = false, showAll = true, explicitShowAll = false;
+
+    for(int argIdx = 1; argIdx < argc; argIdx++) {
+      if(strncmp(SEED_PARAM_NAME, argv[argIdx], SEED_PARAM_SIZE) == 0) {
+        char* paramValue = argv[argIdx] + SEED_PARAM_SIZE;
+        sscanf(paramValue, "%ld", &seed);
+      } else if(strncmp(SAMPLES_PARAM_NAME, argv[argIdx], SAMPLES_PARAM_SIZE) == 0) {
+        char* paramValue = argv[argIdx] + SAMPLES_PARAM_SIZE;
+        sscanf(paramValue, "%ld", &numSamples);
+      } else if(strncmp(BLOCKS_PARAM_NAME, argv[argIdx], BLOCKS_PARAM_SIZE) == 0) {
+        char* paramValue = argv[argIdx] + BLOCKS_PARAM_SIZE;
+        sscanf(paramValue, "%d", &numBlocks);
+      } else if(strncmp(SHOW_FIRST_PARAM_NAME, argv[argIdx], SHOW_FIRST_PARAM_SIZE) == 0) {
+        showFirst = true;
+        if(!explicitShowAll) {
+          showAll = false;
+        }
+      } else if(strncmp(SHOW_LAST_PARAM_NAME, argv[argIdx], SHOW_LAST_PARAM_SIZE) == 0) {
+        showLast = true;
+        if(!explicitShowAll) {
+          showAll = false;
+        }
+      } else if(strncmp(SHOW_ALL_PARAM_NAME, argv[argIdx], SHOW_ALL_PARAM_SIZE) == 0) {
+        showAll = true;
+        explicitShowAll = true;
+      }
+    }
+
     // TODO: Grab device ID parameter...
-    // TODO: Use clock or some such for random seed, unless specified on CLI...
-    // TODO: Parameterize NUM_SAMPLES...
     // TODO: Divide the work among available (selected) devices.
 
     ///////////////////////////////////////////////////////////////////////////
     // Generate random seed.
     ///////////////////////////////////////////////////////////////////////////
-    FILE* randomSource = fopen("/dev/random", "rb");
-    unsigned long seed;
-    int recordsRead = fread(&seed, sizeof(unsigned long), 1, randomSource);
-    assert(recordsRead == 1);
-    fclose(randomSource);
+    if(seed == 0) {
+      std::cerr << "Generating random seed." << std::endl;
+      FILE* randomSource = fopen("/dev/random", "rb");
+      int recordsRead = fread(&seed, sizeof(unsigned long), 1, randomSource);
+      assert(recordsRead == 1);
+      fclose(randomSource);
+    }
+    std::cerr << "Using seed: " << seed << std::endl;
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Instantiate relevant objects / allocate memory in host RAM.
     ///////////////////////////////////////////////////////////////////////////
     WIE::Device* device = new WIE::Device();
-    WIE::Random* wrapper = new WIE::Random(*device, seed, NUM_SAMPLES);
-    float *samples = new float[NUM_SAMPLES];
+    WIE::Random* wrapper = new WIE::Random(*device, seed, numSamples);
+    std::cerr << "Generating " << numBlocks << " block(s) of " << numSamples << " samples." << std::endl;
+    float *samples = new float[numSamples];
 
 
     ///////////////////////////////////////////////////////////////////////////
     // Generate random numbers, copy to host, and spit them out.
     ///////////////////////////////////////////////////////////////////////////
-    for(int j = 0; j < 32; j++) {
+    for(int j = 0; j < numBlocks; j++) {
       wrapper->generate();
       wrapper->copyToHost(samples);
 
-      for(int i = 0; i < NUM_SAMPLES; i++) {
-        printf("%f\n", samples[i]);
+      // Specifically putting first/last on stderr but all on stdout so you can
+      // use both at once -- redirecting all to a file, and having a
+      // quick-check displayed...
+      if(showFirst || showLast) {
+        std::cerr << "Block #" << j;
+        if(showFirst) {
+          std::cerr << ", first value: " << samples[0];
+        }
+        if(showLast) {
+          std::cerr << ", last value: " << samples[numSamples - 1];
+        }
+        std::cerr << std::endl;
+      }
+
+      if(showAll) {
+        for(int i = 0; i < numSamples; i++) {
+          // TODO: Something *MUCH* faster than this. >.<
+          printf("%f\n", samples[i]);
+        }
       }
     }
 
