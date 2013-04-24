@@ -1,6 +1,8 @@
 #!/bin/bash
-if [[ $ATTEMPTS -eq 0 ]]; then
+if [[ $THOROUGH -gt 0 ]]; then
   export ATTEMPTS=1000
+elif [[ $ATTEMPTS -eq 0 ]]; then
+  export ATTEMPTS=1
 fi
 
 export FAIL=0

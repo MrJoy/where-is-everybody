@@ -117,3 +117,6 @@ clobber:
 # TODO: Better test harness, and unified control of flow via return code.
 test:
 	find $(TESTS_PATH) -type f -exec {} \;
+
+full_test:
+	make THOROUGH=1 test
