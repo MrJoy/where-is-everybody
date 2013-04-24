@@ -51,6 +51,12 @@ namespace WIE {
     curandGenerator_t generator;
 
     void Init();
+
+    // NOT IMPLEMENTED!
+    Random(Random& src);
+    Random(const Random& src);
+    Random(volatile Random& src);
+    Random(const volatile Random& src);
   };
 }
 #endif

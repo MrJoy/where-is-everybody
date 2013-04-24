@@ -48,6 +48,12 @@ namespace WIE {
     int initRequestedDevice(int desiredDeviceID);
     int initBestDevice();
     int convertSMVersion2Cores(int major, int minor);
+
+    // NOT IMPLEMENTED!
+    Device(Device& src);
+    Device(const Device& src);
+    Device(volatile Device& src);
+    Device(const volatile Device& src);
   };
 }
 
