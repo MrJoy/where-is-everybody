@@ -40,7 +40,7 @@ namespace WIE {
     void copyToHost(float* buffer);
 
     void assertResult(curandStatus_t result, const std::string& msg);
-
+//    void save(const std::string& fname);
 
   private:
     WIE::Device&     device;

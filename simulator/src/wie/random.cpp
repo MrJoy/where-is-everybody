@@ -53,6 +53,16 @@ void WIE::Random::assertResult(curandStatus_t result, const std::string& msg)
   }
 }
 
+// void WIE::Random::save(const std::string& fname)
+// {
+//   FILE* out = fopen(fname, "wb");
+//   assert(out);
+//
+//   int result = fwrite(hostSamples, sampleCount * sizeof(float), 1, out);
+//   assert(result == 1)
+//   fclose(out);
+// }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main class logic.
