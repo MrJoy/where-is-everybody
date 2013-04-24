@@ -16,7 +16,7 @@ CUDA::Random::Random(CUDA::Device* pDevice, unsigned long pSeed, unsigned int pS
   : device(pDevice),
     seed(pSeed),
     sampleCount(pSampleCount),
-    rngMethod(CURAND_RNG_PSEUDO_MTGP32) // Mersenne Twister
+    rngMethod(CURAND_RNG_PSEUDO_XORWOW)
 {
   Init();
 }
