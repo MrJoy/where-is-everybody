@@ -91,7 +91,7 @@ LDFLAGS  += -lcurand
 ###############################################################################
 # Target rules.
 ###############################################################################
-all: $(BUILD_PATH)/generate_randoms
+all: $(BUILD_PATH)/randoms
 
 $(INTERMEDIATE_PATH)/wie/:
 	mkdir -p $(INTERMEDIATE_PATH)/wie
@@ -102,10 +102,10 @@ $(INTERMEDIATE_PATH)/wie/device.o: $(SOURCE_PATH)/wie/device.cpp $(INTERMEDIATE_
 $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(INTERMEDIATE_PATH)/generate_randoms.o: $(SOURCE_PATH)/generate_randoms.cpp
+$(INTERMEDIATE_PATH)/randoms.o: $(SOURCE_PATH)/randoms.cpp
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
+$(BUILD_PATH)/randoms: $(INTERMEDIATE_PATH)/randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean:
@@ -114,6 +114,6 @@ clean:
 clobber:
 	rm -rf bin/*
 
+# TODO: Better test harness, and unified control of flow via return code.
 test:
 	find $(TESTS_PATH) -type f -exec {} \;
-# TODO: Better test harness, and unified control of flow via return code.
