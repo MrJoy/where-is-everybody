@@ -9,6 +9,7 @@
 // System includes.
 ///////////////////////////////////////////////////////////////////////////////
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 #include <iostream>
 
