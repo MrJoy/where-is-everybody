@@ -79,7 +79,7 @@ endif
 ###############################################################################
 # Common includes and paths for CUDA, and CURAND.
 ###############################################################################
-INCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH)
+INCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
 LDFLAGS  += -lcurand
 
 
@@ -88,14 +88,23 @@ LDFLAGS  += -lcurand
 ###############################################################################
 all: $(BUILD_PATH)/generate_randoms
 
+$(INTERMEDIATE_PATH)/cuda/:
+	mkdir -p $(INTERMEDIATE_PATH)/cuda
+
+$(INTERMEDIATE_PATH)/cuda/device.o: $(SOURCE_PATH)/cuda/device.cpp $(INTERMEDIATE_PATH)/cuda/
+	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
+
+$(INTERMEDIATE_PATH)/cuda/random.o: $(SOURCE_PATH)/cuda/random.cpp $(INTERMEDIATE_PATH)/cuda/
+	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
+
 $(INTERMEDIATE_PATH)/generate_randoms.o: $(SOURCE_PATH)/generate_randoms.cpp
 	$(GCC) $(CCFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o
+$(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o $(INTERMEDIATE_PATH)/cuda/random.o $(INTERMEDIATE_PATH)/cuda/device.o
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean:
-	rm -f tmp/*
+	rm -rf tmp/*
 
 clobber:
-	rm -f bin/*
+	rm -rf bin/*
