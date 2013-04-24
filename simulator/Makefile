@@ -32,9 +32,10 @@ CUDA_SAMPLES_PATH ?= $(CUDA_PATH)/samples/common/inc
 ###############################################################################
 # Build paths.
 ###############################################################################
-SOURCE_PATH       := src
-INTERMEDIATE_PATH := tmp
-BUILD_PATH        := bin
+SOURCE_PATH       ?= src
+INTERMEDIATE_PATH ?= tmp
+BUILD_PATH        ?= bin
+TESTS_PATH        ?= tests
 
 
 ###############################################################################
@@ -112,3 +113,7 @@ clean:
 
 clobber:
 	rm -rf bin/*
+
+test:
+	find $(TESTS_PATH) -type f -exec {} \;
+# TODO: Better test harness, and unified control of flow via return code.
