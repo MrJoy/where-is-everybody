@@ -156,7 +156,7 @@ int main(int argc, char **argv) //int argc, char **argv
       }
 
       if(showAll) {
-        for(int i = 0; i < numSamples; i++) {
+        for(unsigned int i = 0; i < numSamples; i++) {
           // TODO: Something *MUCH* faster than this. >.<
           printf("%f\n", samples[i]);
         }
