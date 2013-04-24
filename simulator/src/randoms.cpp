@@ -104,7 +104,7 @@ int main(int argc, char **argv) //int argc, char **argv
     // Instantiate relevant objects / allocate memory in host RAM.
     ///////////////////////////////////////////////////////////////////////////
     WIE::Device* device = new WIE::Device();
-    WIE::Random* wrapper = new WIE::Random(*device, seed, numSamples);
+    WIE::Random* rng = new WIE::Random(*device, seed, numSamples);
     std::cerr << "Generating " << numBlocks << " block(s) of " << numSamples << " samples." << std::endl;
     float *samples = new float[numSamples];
 
@@ -113,8 +113,8 @@ int main(int argc, char **argv) //int argc, char **argv
     // Generate random numbers, copy to host, and spit them out.
     ///////////////////////////////////////////////////////////////////////////
     for(int j = 0; j < numBlocks; j++) {
-      wrapper->generate();
-      wrapper->copyToHost(samples);
+      rng->generate();
+      rng->copyToHost(samples);
 
       // Specifically putting first/last on stderr but all on stdout so you can
       // use both at once -- redirecting all to a file, and having a
@@ -141,7 +141,7 @@ int main(int argc, char **argv) //int argc, char **argv
     ///////////////////////////////////////////////////////////////////////////
     // Cleanup
     ///////////////////////////////////////////////////////////////////////////
-    delete wrapper;
+    delete rng;
     delete device;
     delete samples;
   } catch (runtime_error &e) {
