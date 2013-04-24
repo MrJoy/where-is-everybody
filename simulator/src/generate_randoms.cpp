@@ -54,7 +54,6 @@ int main() //int argc, char **argv
     CUDA::Device* device = new CUDA::Device();
     CUDA::Random* wrapper = new CUDA::Random(*device, seed, NUM_SAMPLES);
     float *samples = new float[NUM_SAMPLES];
-    assert(samples);
 
 
     ///////////////////////////////////////////////////////////////////////////
