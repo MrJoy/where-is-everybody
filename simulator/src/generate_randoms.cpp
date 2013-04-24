@@ -44,7 +44,8 @@ int main() //int argc, char **argv
     ///////////////////////////////////////////////////////////////////////////
     FILE* randomSource = fopen("/dev/random", "rb");
     unsigned long seed;
-    assert(fread(&seed, sizeof(unsigned long), 1, randomSource) == 1);
+    int recordsRead = fread(&seed, sizeof(unsigned long), 1, randomSource);
+    assert(recordsRead == 1);
     fclose(randomSource);
 
     ///////////////////////////////////////////////////////////////////////////

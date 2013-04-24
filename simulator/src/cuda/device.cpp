@@ -46,7 +46,8 @@ void CUDA::Device::Init()
   assert(deviceID >= 0);
 
   properties = fetchDeviceProperties(deviceID);
-  assert(deviceIsUsable(properties));
+  bool isUsable = deviceIsUsable(properties);
+  assert(isUsable);
 
   activate();
 }
