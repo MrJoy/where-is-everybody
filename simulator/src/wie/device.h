@@ -1,5 +1,5 @@
-#ifndef CUDA_DEVICE_H
-#define CUDA_DEVICE_H
+#ifndef WIE_DEVICE_H
+#define WIE_DEVICE_H
 
 #pragma once
 
@@ -23,7 +23,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Class definition.
 ///////////////////////////////////////////////////////////////////////////////
-namespace CUDA {
+namespace WIE {
   using std::string;
 
   class Device

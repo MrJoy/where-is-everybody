@@ -1,4 +1,4 @@
-#include "cuda/device.h"
+#include "wie/device.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Local/private constant data.
@@ -24,19 +24,19 @@ VersionCorePair coresPerVersion[] = {
 ///////////////////////////////////////////////////////////////////////////////
 // Construction/Destruction.
 ///////////////////////////////////////////////////////////////////////////////
-CUDA::Device::Device(int pDeviceID)
+WIE::Device::Device(int pDeviceID)
   : deviceID(pDeviceID)
 {
   Init();
 }
 
-CUDA::Device::Device()
+WIE::Device::Device()
   : deviceID(-1)
 {
   Init();
 }
 
-void CUDA::Device::Init()
+void WIE::Device::Init()
 {
   if(deviceID >= 0) {
     deviceID = initRequestedDevice(deviceID);
@@ -52,13 +52,13 @@ void CUDA::Device::Init()
   activate();
 }
 
-CUDA::Device::~Device()
+WIE::Device::~Device()
 {
   activate();
   cudaDeviceReset();
 }
 
-int CUDA::Device::initRequestedDevice(int desiredDeviceID)
+int WIE::Device::initRequestedDevice(int desiredDeviceID)
 {
   int deviceCount = getDeviceCount();
 
@@ -78,7 +78,7 @@ int CUDA::Device::initRequestedDevice(int desiredDeviceID)
 }
 
 // This function returns the best GPU (with maximum GFLOPS)
-int CUDA::Device::initBestDevice()
+int WIE::Device::initBestDevice()
 {
   // int sm_per_multiproc  = 0;
   // int max_compute_perf   = 0, max_perf_device   = 0;
@@ -134,7 +134,7 @@ int CUDA::Device::initBestDevice()
   return maxPerfDevice;
 }
 
-int CUDA::Device::convertSMVersion2Cores(int major, int minor)
+int WIE::Device::convertSMVersion2Cores(int major, int minor)
 {
   int requestedVersion = (major << 4) + minor;
 
@@ -154,7 +154,7 @@ int CUDA::Device::convertSMVersion2Cores(int major, int minor)
 ///////////////////////////////////////////////////////////////////////////////
 // Handy helper methods.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Device::assertResult(cudaError_t result, const std::string& msg)
+void WIE::Device::assertResult(cudaError_t result, const std::string& msg)
 {
   if(result != cudaSuccess) {
     std::ostringstream s;
@@ -163,20 +163,20 @@ void CUDA::Device::assertResult(cudaError_t result, const std::string& msg)
   }
 }
 
-cudaDeviceProp CUDA::Device::fetchDeviceProperties(int desiredDeviceID)
+cudaDeviceProp WIE::Device::fetchDeviceProperties(int desiredDeviceID)
 {
   cudaDeviceProp deviceProperties;
   assertResult(cudaGetDeviceProperties(&deviceProperties, desiredDeviceID), "Could not get device properties");
   return deviceProperties;
 }
 
-bool CUDA::Device::deviceIsUsable(cudaDeviceProp deviceProperties)
+bool WIE::Device::deviceIsUsable(cudaDeviceProp deviceProperties)
 {
   return (deviceProperties.computeMode != cudaComputeModeProhibited) &&
     (deviceProperties.major >= 1);
 }
 
-int CUDA::Device::getDeviceCount()
+int WIE::Device::getDeviceCount()
 {
   int deviceCount;
   assertResult(cudaGetDeviceCount(&deviceCount), "Couldn't get device count");
@@ -187,7 +187,7 @@ int CUDA::Device::getDeviceCount()
 ///////////////////////////////////////////////////////////////////////////////
 // Main class logic.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Device::activate()
+void WIE::Device::activate()
 {
   assertResult(cudaSetDevice(deviceID), "Couldn't activate device");
 }

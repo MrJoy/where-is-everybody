@@ -1,9 +1,9 @@
-#include "cuda/random.h"
+#include "wie/random.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Construction/Destruction.
 ///////////////////////////////////////////////////////////////////////////////
-CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod)
+WIE::Random::Random(WIE::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod)
   : device(pDevice),
     seed(pSeed),
     sampleCount(pSampleCount),
@@ -12,7 +12,7 @@ CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pS
   Init();
 }
 
-CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount)
+WIE::Random::Random(WIE::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount)
   : device(pDevice),
     seed(pSeed),
     sampleCount(pSampleCount),
@@ -21,7 +21,7 @@ CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pS
   Init();
 }
 
-void CUDA::Random::Init()
+void WIE::Random::Init()
 {
   device.activate();
   assertResult(curandCreateGenerator(&generator, rngMethod), "Could not create random number generator");
@@ -29,7 +29,7 @@ void CUDA::Random::Init()
   samples = NULL;
 }
 
-CUDA::Random::~Random()
+WIE::Random::~Random()
 {
   assert(generator);
   curandDestroyGenerator(generator);
@@ -44,7 +44,7 @@ CUDA::Random::~Random()
 ///////////////////////////////////////////////////////////////////////////////
 // Handy helper methods.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Random::assertResult(curandStatus_t result, const std::string& msg)
+void WIE::Random::assertResult(curandStatus_t result, const std::string& msg)
 {
   if(result != CURAND_STATUS_SUCCESS) {
     std::ostringstream s;
@@ -57,7 +57,7 @@ void CUDA::Random::assertResult(curandStatus_t result, const std::string& msg)
 ///////////////////////////////////////////////////////////////////////////////
 // Main class logic.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Random::generate()
+void WIE::Random::generate()
 {
   device.activate();
   if(!samples) {
@@ -67,7 +67,7 @@ void CUDA::Random::generate()
   assertResult(result, "Could not generate random numbers");
 }
 
-void CUDA::Random::copyToHost(float* buffer)
+void WIE::Random::copyToHost(float* buffer)
 {
   device.assertResult(cudaMemcpy(buffer, samples, sampleCount * sizeof(float), cudaMemcpyDeviceToHost), "Could not copy random numbers to host");
 }

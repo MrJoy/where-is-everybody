@@ -1,5 +1,5 @@
-#ifndef CUDA_RANDOM_H
-#define CUDA_RANDOM_H
+#ifndef WIE_RANDOM_H
+#define WIE_RANDOM_H
 
 #pragma once
 
@@ -23,18 +23,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Local includes.
 ///////////////////////////////////////////////////////////////////////////////
-#include "cuda/device.h"
+#include "wie/device.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Class definition.
 ///////////////////////////////////////////////////////////////////////////////
-namespace CUDA {
+namespace WIE {
   class Random
   {
   public:
-    Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod);
-    Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount);
+    Random(WIE::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod);
+    Random(WIE::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount);
     ~Random();
     void generate();
     void copyToHost(float* buffer);
@@ -43,7 +43,7 @@ namespace CUDA {
 
 
   private:
-    CUDA::Device&     device;
+    WIE::Device&     device;
     long              seed;
     unsigned long     sampleCount;
     float*            samples;

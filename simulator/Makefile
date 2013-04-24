@@ -92,19 +92,19 @@ LDFLAGS  += -lcurand
 ###############################################################################
 all: $(BUILD_PATH)/generate_randoms
 
-$(INTERMEDIATE_PATH)/cuda/:
-	mkdir -p $(INTERMEDIATE_PATH)/cuda
+$(INTERMEDIATE_PATH)/wie/:
+	mkdir -p $(INTERMEDIATE_PATH)/wie
 
-$(INTERMEDIATE_PATH)/cuda/device.o: $(SOURCE_PATH)/cuda/device.cpp $(INTERMEDIATE_PATH)/cuda/
+$(INTERMEDIATE_PATH)/wie/device.o: $(SOURCE_PATH)/wie/device.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(INTERMEDIATE_PATH)/cuda/random.o: $(SOURCE_PATH)/cuda/random.cpp $(INTERMEDIATE_PATH)/cuda/
+$(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
 $(INTERMEDIATE_PATH)/generate_randoms.o: $(SOURCE_PATH)/generate_randoms.cpp
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o $(INTERMEDIATE_PATH)/cuda/random.o $(INTERMEDIATE_PATH)/cuda/device.o
+$(BUILD_PATH)/generate_randoms: $(INTERMEDIATE_PATH)/generate_randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
 	$(GCC) $(CCFLAGS)$(OPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean:
