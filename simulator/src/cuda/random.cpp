@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Construction/Destruction.
 ///////////////////////////////////////////////////////////////////////////////
-CUDA::Random::Random(CUDA::Device* pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod)
+CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod)
   : device(pDevice),
     seed(pSeed),
     sampleCount(pSampleCount),
@@ -12,7 +12,7 @@ CUDA::Random::Random(CUDA::Device* pDevice, unsigned long pSeed, unsigned int pS
   Init();
 }
 
-CUDA::Random::Random(CUDA::Device* pDevice, unsigned long pSeed, unsigned int pSampleCount)
+CUDA::Random::Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount)
   : device(pDevice),
     seed(pSeed),
     sampleCount(pSampleCount),
@@ -23,8 +23,7 @@ CUDA::Random::Random(CUDA::Device* pDevice, unsigned long pSeed, unsigned int pS
 
 void CUDA::Random::Init()
 {
-  assert(device);
-  device->activate();
+  device.activate();
   assertResult(curandCreateGenerator(&generator, rngMethod), "Could not create random number generator");
   assertResult(curandSetPseudoRandomGeneratorSeed(generator, seed), "Could not set seed value");
   samples = NULL;
@@ -45,7 +44,7 @@ CUDA::Random::~Random()
 ///////////////////////////////////////////////////////////////////////////////
 // Handy helper methods.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Random::assertResult(curandStatus_t result, std::string msg)
+void CUDA::Random::assertResult(curandStatus_t result, const std::string& msg)
 {
   if(result != CURAND_STATUS_SUCCESS) {
     std::ostringstream s;
@@ -60,9 +59,9 @@ void CUDA::Random::assertResult(curandStatus_t result, std::string msg)
 ///////////////////////////////////////////////////////////////////////////////
 void CUDA::Random::generate()
 {
-  device->activate();
+  device.activate();
   if(!samples) {
-    device->assertResult(cudaMalloc((void **)&samples, sampleCount * sizeof(float)), "Could not allocate device memory");
+    device.assertResult(cudaMalloc((void **)&samples, sampleCount * sizeof(float)), "Could not allocate device memory");
   }
   curandStatus_t result = curandGenerateUniform(generator, samples, sampleCount);
   assertResult(result, "Could not generate random numbers");
@@ -70,5 +69,5 @@ void CUDA::Random::generate()
 
 void CUDA::Random::copyToHost(float* buffer)
 {
-  device->assertResult(cudaMemcpy(buffer, samples, sampleCount * sizeof(float), cudaMemcpyDeviceToHost), "Could not copy random numbers to host");
+  device.assertResult(cudaMemcpy(buffer, samples, sampleCount * sizeof(float), cudaMemcpyDeviceToHost), "Could not copy random numbers to host");
 }

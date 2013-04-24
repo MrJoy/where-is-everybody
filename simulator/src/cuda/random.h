@@ -33,17 +33,17 @@ namespace CUDA {
   class Random
   {
   public:
-    Random(CUDA::Device *pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod);
-    Random(CUDA::Device *pDevice, unsigned long pSeed, unsigned int pSampleCount);
+    Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount, curandRngType pRngMethod);
+    Random(CUDA::Device& pDevice, unsigned long pSeed, unsigned int pSampleCount);
     ~Random();
     void generate();
     void copyToHost(float* buffer);
 
-    void assertResult(curandStatus_t result, std::string msg);
+    void assertResult(curandStatus_t result, const std::string& msg);
 
 
   private:
-    CUDA::Device*     device;
+    CUDA::Device&     device;
     long              seed;
     unsigned long     sampleCount;
     float*            samples;

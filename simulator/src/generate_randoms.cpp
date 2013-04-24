@@ -51,8 +51,8 @@ int main() //int argc, char **argv
     ///////////////////////////////////////////////////////////////////////////
     // Instantiate relevant objects / allocate memory in host RAM.
     ///////////////////////////////////////////////////////////////////////////
-    CUDA::Device *device = new CUDA::Device();
-    CUDA::Random *wrapper = new CUDA::Random(device, seed, NUM_SAMPLES);
+    CUDA::Device* device = new CUDA::Device();
+    CUDA::Random* wrapper = new CUDA::Random(*device, seed, NUM_SAMPLES);
     float *samples = new float[NUM_SAMPLES];
     assert(samples);
 

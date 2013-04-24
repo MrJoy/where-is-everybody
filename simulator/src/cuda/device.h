@@ -34,7 +34,7 @@ namespace CUDA {
     ~Device();
 
     void activate();
-    void assertResult(cudaError_t result, string msg);
+    void assertResult(cudaError_t result, const std::string& msg);
 
 
   private:

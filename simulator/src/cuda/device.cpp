@@ -154,7 +154,7 @@ int CUDA::Device::convertSMVersion2Cores(int major, int minor)
 ///////////////////////////////////////////////////////////////////////////////
 // Handy helper methods.
 ///////////////////////////////////////////////////////////////////////////////
-void CUDA::Device::assertResult(cudaError_t result, std::string msg)
+void CUDA::Device::assertResult(cudaError_t result, const std::string& msg)
 {
   if(result != cudaSuccess) {
     std::ostringstream s;
