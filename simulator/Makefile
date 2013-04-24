@@ -72,7 +72,11 @@ CCFLAGS    += -Wall -Wextra -Wunknown-pragmas -Wno-system-headers -fdiagnostics-
 ifeq ($(DEBUG),1)
   CCFLAGS  += -g
 else
-  OPTFLAGS += -Os
+  ifneq ($(DARWIN),)
+    OPTFLAGS += -O4
+  else
+    OPTFLAGS += -Os
+  endif
 endif
 
 
