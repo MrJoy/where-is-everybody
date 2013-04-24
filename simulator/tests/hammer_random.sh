@@ -7,7 +7,7 @@ fi
 
 export FAIL=0
 echo "TEST: Hammering 'bin/randoms --first --last --samples=67108864 --blocks=1 --seed=1' $ATTEMPTS times to try and reproduce device-allocation error."
-for i in {1..$ATTEMPTS}; do
+for i in $(seq 1 $ATTEMPTS); do
   if [[ ! -x bin/randoms ]]; then
     echo "FAIL: Need to run 'make all' first."
     exit 1
