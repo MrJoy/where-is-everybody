@@ -60,9 +60,10 @@ void CUDA::Random::assertResult(curandStatus_t result, std::string msg)
 ///////////////////////////////////////////////////////////////////////////////
 void CUDA::Random::generate()
 {
-  assert(!samples);
   device->activate();
-  device->assertResult(cudaMalloc((void **)&samples, sampleCount * sizeof(float)), "Could not allocate device memory");
+  if(!samples) {
+    device->assertResult(cudaMalloc((void **)&samples, sampleCount * sizeof(float)), "Could not allocate device memory");
+  }
   curandStatus_t result = curandGenerateUniform(generator, samples, sampleCount);
   assertResult(result, "Could not generate random numbers");
 }
