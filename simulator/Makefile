@@ -103,6 +103,12 @@ $(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
 $(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o
 	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
 
+$(INTERMEDIATE_PATH)/example.o: $(SOURCE_PATH)/example.cu
+	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
+
+$(BUILD_PATH)/example: $(INTERMEDIATE_PATH)/example.o
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
+
 $(INTERMEDIATE_PATH)/stars.o: $(SOURCE_PATH)/stars.cu
 	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
 
