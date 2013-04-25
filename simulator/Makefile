@@ -98,7 +98,7 @@ LDFLAGS    += -lcurand
 ###############################################################################
 # Target rules.
 ###############################################################################
-all: $(BUILD_PATH)/randoms
+all: $(BUILD_PATH)/randoms $(BUILD_PATH)/hello
 
 $(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
 	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
