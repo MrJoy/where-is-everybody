@@ -5,7 +5,8 @@ const int N = 16;
 const int blocksize = 16;
 
 __global__
-void hello(unsigned int *seeds, unsigned int *outs, int n)
+void
+hello(unsigned int *seeds, unsigned int *outs, int n)
 {
   curandStateXORWOW_t rgen ;
   curand_init(seeds[threadIdx.x], 0,0,&rgen);
@@ -16,7 +17,9 @@ void hello(unsigned int *seeds, unsigned int *outs, int n)
   //see curand__discrete
 }
 
-void get_seeds(unsigned int *seeds, int n){
+void
+get_seeds( unsigned int *seeds, int n )
+{
   FILE* randomSource = fopen("/dev/random", "rb");
   unsigned int seed0;
   int recordsRead = fread(&seed0, sizeof(unsigned long), 1, randomSource);
@@ -34,7 +37,8 @@ void inspect(unsigned int *array, int n){
   printf("\n");
 }
 
-int main()
+int
+main()
 {
   unsigned int seeds[N];
   unsigned int outputs[N * N];
