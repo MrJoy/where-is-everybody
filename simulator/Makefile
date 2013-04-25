@@ -42,14 +42,13 @@ TESTS_PATH        ?= tests
 ###############################################################################
 # OS/architecture-specific build flags.
 ###############################################################################
-LDFLAGS       += -lcudart
-NVFLAGS       += -arch=sm_20
 ifneq ($(DARWIN),)
   LDFLAGS     += -Xlinker -rpath $(CUDA_LIB_PATH) -L$(CUDA_LIB_PATH)
   CCFLAGS     += -arch $(OS_ARCH)
   NVFLAGS     += -m64
 else
-  LDFLAGS     += -L$(CUDA_LIB_PATH)
+  LDFLAGS     += -Xlinker -rpath $(CUDA_LIB_PATH)
+  CCFLAGS     += -L$(CUDA_LIB_PATH)
   ifeq ($(OS_SIZE),32)
     CCFLAGS   += -m32
     NVFLAGS   += -m32
@@ -58,6 +57,7 @@ else
     NVFLAGS   += -m64
   endif
 endif
+NVFLAGS       += -arch=sm_20
 
 
 ###############################################################################
@@ -89,7 +89,7 @@ endif
 ###############################################################################
 CCINCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
 NVINCLUDES := -I $(CUDA_INC_PATH) -I $(CUDA_SAMPLES_PATH) -I $(SOURCE_PATH)
-LDFLAGS    += -lcurand -L$(CUDA_LIB_PATH)
+LDFLAGS    += -lcudart -lcurand
 
 
 ###############################################################################
