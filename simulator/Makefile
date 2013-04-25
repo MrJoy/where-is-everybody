@@ -27,6 +27,7 @@ endif
 CUDA_INC_PATH     ?= $(CUDA_PATH)/include
 CUDA_BIN_PATH     ?= $(CUDA_PATH)/bin
 CUDA_SAMPLES_PATH ?= $(CUDA_PATH)/samples/common/inc
+NVCC              ?= $(CUDA_BIN_PATH)/nvcc
 
 
 ###############################################################################
@@ -45,7 +46,7 @@ EXTRA_LDFLAGS ?=
 
 
 ###############################################################################
-# OS-specific build flags.
+# OS/architecture-specific build flags.
 ###############################################################################
 ifneq ($(DARWIN),)
   LDFLAGS     := -Xlinker -rpath $(CUDA_LIB_PATH) -L$(CUDA_LIB_PATH) -lcudart
@@ -59,24 +60,29 @@ else
     CCFLAGS   := -m64
   endif
 endif
+NVFLAGS       += -m64 -arch=sm_20
 
 
 ###############################################################################
 # Debug/Optimization/Warning build flags.
 ###############################################################################
-OPTFLAGS   :=
-CCFLAGS    += -Wall -Wextra -Wunknown-pragmas -Wno-system-headers -fdiagnostics-show-option
+CCOPTFLAGS     ?=
+NVOPTFLAGS     ?=
+CCFLAGS        += -Wall -Wextra -Wunknown-pragmas -Wno-system-headers -fdiagnostics-show-option
+NVFLAGS        +=
 # Need to suss out how to ignore system headers with llvm-g++, etc...
 # ifneq ($(DARWIN),)
-#   CCFLAGS  += -pedantic
+#   CCFLAGS      += -pedantic
 # endif
 ifeq ($(DEBUG),1)
-  CCFLAGS  += -g
+  CCFLAGS      += -g
+  NVFLAGS      += -g -G
 else
+  NVOPTFLAGS +=
   ifneq ($(DARWIN),)
-    OPTFLAGS += -O4
+    CCOPTFLAGS += -O4
   else
-    OPTFLAGS += -Os
+    CCOPTFLAGS += -Os
   endif
 endif
 
@@ -84,8 +90,9 @@ endif
 ###############################################################################
 # Common includes and paths for CUDA, and CURAND.
 ###############################################################################
-INCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
-LDFLAGS  += -lcurand
+CCINCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
+NVINCLUDES := -I $(CUDA_INC_PATH) -I $(CUDA_SAMPLES_PATH) -I $(SOURCE_PATH)
+LDFLAGS    += -lcurand
 
 
 ###############################################################################
@@ -93,20 +100,26 @@ LDFLAGS  += -lcurand
 ###############################################################################
 all: $(BUILD_PATH)/randoms
 
+$(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
+	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
+
+$(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
+
 $(INTERMEDIATE_PATH)/wie/:
 	mkdir -p $(INTERMEDIATE_PATH)/wie
 
 $(INTERMEDIATE_PATH)/wie/device.o: $(SOURCE_PATH)/wie/device.cpp $(INTERMEDIATE_PATH)/wie/
-	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
 $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_PATH)/wie/
-	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
 $(INTERMEDIATE_PATH)/randoms.o: $(SOURCE_PATH)/randoms.cpp
-	$(GCC) $(CCFLAGS)$(OPTFLAGS) $(INCLUDES) -o $@ -c $<
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/randoms: $(INTERMEDIATE_PATH)/randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
-	$(GCC) $(CCFLAGS)$(OPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 clean:
 	rm -rf tmp/*
