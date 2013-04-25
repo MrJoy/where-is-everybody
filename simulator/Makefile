@@ -40,12 +40,6 @@ TESTS_PATH        ?= tests
 
 
 ###############################################################################
-# Extra user flags.
-###############################################################################
-EXTRA_LDFLAGS ?=
-
-
-###############################################################################
 # OS/architecture-specific build flags.
 ###############################################################################
 LDFLAGS       += -lcudart
@@ -107,7 +101,7 @@ $(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
 	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o
-	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
 
 $(INTERMEDIATE_PATH)/wie/:
 	mkdir -p $(INTERMEDIATE_PATH)/wie
@@ -122,7 +116,7 @@ $(INTERMEDIATE_PATH)/randoms.o: $(SOURCE_PATH)/randoms.cpp
 	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/randoms: $(INTERMEDIATE_PATH)/randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
-	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS) $(EXTRA_LDFLAGS)
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
 
 clean:
 	rm -rf tmp/*
