@@ -13,6 +13,7 @@ hello(unsigned int *seeds, unsigned int *outs, int n)
   for( int i=0; i<n; ++i ) {
     outs[threadIdx.x * n + i] = curand( &rgen );
   }
+  // printf("threadIdx.x=%d, blockIdx.x=%d, blockDim.x=%d, seed=%08x\n", threadIdx.x, blockIdx.x, blockDim.x, seeds[threadIdx.x]);
   //see float curand_uniform
   //see curand__discrete
 }
@@ -44,6 +45,9 @@ main()
 {
   unsigned int seeds[N];
   unsigned int outputs[N * N];
+  for( int j=0; j<N*N; j++ ) {
+    outputs[j] = 0;
+  }
 
   unsigned int *cseeds;
   unsigned int *coutputs;
@@ -52,6 +56,7 @@ main()
 
   get_seeds( &seeds[0], N );
   inspect( seeds, N );
+  printf( "\n" );
 
   cudaMalloc( (void**)&cseeds, seed_size );
   cudaMalloc( (void**)&coutputs, output_size );
