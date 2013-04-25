@@ -22,7 +22,7 @@ get_seeds( unsigned int *seeds, int n )
 {
   FILE* randomSource = fopen("/dev/random", "rb");
   unsigned int seed0;
-  int recordsRead = fread( &seed0, sizeof(unsigned long), 1, randomSource );
+  int recordsRead = fread( &seed0, sizeof(unsigned int), 1, randomSource );
   //assert(recordsRead == n);
   for( int i=0; i<n; ++i ) {
     seeds[i] = seed0 + i;
