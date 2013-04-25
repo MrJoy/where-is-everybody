@@ -9,7 +9,8 @@ void
 hello(unsigned int *seeds, unsigned int *outs, int n)
 {
   curandStateXORWOW_t rgen;
-  curand_init( seeds[threadIdx.x], 0, 0, &rgen );
+  int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
+  curand_init( seeds[baseIdx], 0, 0, &rgen );
   for( int i=0; i<n; ++i ) {
     outs[threadIdx.x * n + i] = curand( &rgen );
   }
