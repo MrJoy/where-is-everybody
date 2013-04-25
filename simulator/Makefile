@@ -89,7 +89,7 @@ endif
 ###############################################################################
 CCINCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
 NVINCLUDES := -I $(CUDA_INC_PATH) -I $(CUDA_SAMPLES_PATH) -I $(SOURCE_PATH)
-LDFLAGS    += -lcurand -L
+LDFLAGS    += -lcurand -L$(CUDA_LIB_PATH)
 
 
 ###############################################################################
