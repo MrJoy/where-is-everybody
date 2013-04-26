@@ -95,12 +95,18 @@ LDFLAGS    += -lcudart -lcurand
 ###############################################################################
 # Target rules.
 ###############################################################################
-all: $(BUILD_PATH)/randoms $(BUILD_PATH)/hello
+all: $(BUILD_PATH)/randoms $(BUILD_PATH)/hello $(BUILD_PATH)/stars
 
 $(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
 	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
+
+$(INTERMEDIATE_PATH)/stars.o: $(SOURCE_PATH)/stars.cu
+	$(NVCC) $(NVFLAGS)$(NVOPTFLAGS) $(NVINCLUDES) -o $@ -c $<
+
+$(BUILD_PATH)/stars: $(INTERMEDIATE_PATH)/stars.o
 	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) -o $@ $+ $(LDFLAGS)
 
 $(INTERMEDIATE_PATH)/wie/:
