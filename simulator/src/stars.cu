@@ -1,20 +1,103 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "curand_kernel.h"
 
-const int STARS                   = 1024 * 1024 * 64 ;//2**26
 
 const int THREADS_PER_BLOCK       = 32; //2**5
 const int BLOCKS                  = 128; //2**7
 const int THREADS_EVER            = THREADS_PER_BLOCK * BLOCKS ;//2**12
 
+//const int STARS                   = 1024 * 1024 * 64 ;//2**26
+const int STARS                   = THREADS_EVER * 2;
 const int NEIGHBORHOODS           = THREADS_EVER ;
 const int NEIGHBORHOOD_STARS      = STARS / NEIGHBORHOODS ;//2**14
 
-typedef unsigned char output_t ;
-const char * OUTPUT_T_FORMAT = "%x " ;
+typedef uint8_t output_t ;
+const char * OUTPUT_T_FORMAT = "%u " ;
 
-__global__
-void
+/*
+ * see notes-20121226.md for description of the semantics of the sim
+ */
+
+/*
+// the code I want
+enum class States : output_t { 
+  INIT = 0,
+  UNINHABITABLE = 1,
+  INHABITABLE = 2,
+  CELLULAR = 3, 
+  OXYGEN_EVENT = 4,
+  CAMBRIAN_EVENT = 5,
+  TECHNICAL_CIV = 6
+  //SPACE_FARING = 7
+};
+*/
+// the code I have: nvcc does not support -std=c++0x.
+// I am refusing to deal with pre c++11 enum.
+//const output_t  INIT = 0;//commented to silence unused variable warning
+const output_t  UNINHABITABLE = 1;
+const output_t  INHABITABLE = 2;
+const output_t  CELLULAR = 3;
+const output_t  OXYGEN_EVENT = 4;
+const output_t  CAMBRIAN_EVENT = 5;
+const output_t  TECHNICAL_CIV = 6;
+
+const unsigned int  NUM_STATES = 7;
+ 
+// **********************************************************************
+// each step is a boolean trial representing 10myr.
+//
+// the steps are indexed by their state values.
+//
+// at each step we generate a flat random 0.0f to 1.0f.
+//
+// Then we convert to 0 if less than the transition probability or 1
+// if more than transition probability.  This means that 0 is a transition
+// and 1 is no change. 
+//
+// note civ states (eg: spacefaring, collapse, colonize) are modeled 
+// separately in fast time since 10myr steps don't seem reasonable
+//
+// STATE_MATRIX is indexed by pseudo code
+//   flip{0,1} * NUM_STATES + current_state{0..(NUM_STATES -1)}
+//
+//   where flip=0 implies transistion and 1 implies stasis and
+//   where the value returned by that is the next state
+//**********************************************************************
+
+const output_t STATE_MATRIX [14] =
+{
+  //transition
+  INHABITABLE,
+  UNINHABITABLE,
+  CELLULAR,
+  OXYGEN_EVENT,
+  CAMBRIAN_EVENT,
+  TECHNICAL_CIV,
+  TECHNICAL_CIV,
+  //stasis
+  UNINHABITABLE,
+  UNINHABITABLE,
+  INHABITABLE,
+  CELLULAR,
+  OXYGEN_EVENT,
+  CAMBRIAN_EVENT,
+  TECHNICAL_CIV
+};
+
+
+
+const float pH = 0.5 ;   //habitable
+const float pB = 0.007 ; //Cellular Biology (50% chance after 100*10myr )
+const float pO = 0.007 ; //Oxygen Event (took another 100 iterations on earth)
+const float pM = 0.0035; //Cambrian Explosion (took 200 iterations on earth)
+const float pT = 0.014;  //Technical Civilization
+//const float pS = 0.5  ;  //Space Faring Civilization
+
+const float PCHANGE[7] = { pH, 0.0, pB, pO, pM, pT, 0.0 };
+
+
+__global__ void
 init_rands(unsigned int seed, curandStateXORWOW_t *rgens )
 {
   int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -22,8 +105,7 @@ init_rands(unsigned int seed, curandStateXORWOW_t *rgens )
   //printf( "init_rands %i %u thr=%i blck=%i blckdim=%i\n", baseIdx, seed, threadIdx.x, blockIdx.x, blockDim.x );
 }
 
-__global__
-void
+__global__ void
 generate_rands( curandStateXORWOW_t *rgens, output_t *outs, int n)
 {
   int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -31,9 +113,27 @@ generate_rands( curandStateXORWOW_t *rgens, output_t *outs, int n)
   for( int i=0; i<n; ++i ) {
     outs[baseIdx * n + i] = static_cast<output_t>(
         ceil( curand_uniform( &rgen ) - 0.5 ));
-    //printf( "generate_rands baseIdx=%i i=%i out=%08x\n", baseIdx, i, outs[baseIdx * n + i] );
   }
   rgens[baseIdx] = rgen;
+}
+
+__global__ void
+iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out, int n, output_t *state_matrix, float *pchange )
+{
+  int neighborhood = threadIdx.x + blockIdx.x * blockDim.x;
+  int base = neighborhood * n;
+  curandStateXORWOW_t rgen = rgens[neighborhood];
+  for( int i=0; i<n; ++i ) {
+    int star = base + i;
+    output_t old_state = buf_in[star];
+    unsigned int flip = (unsigned int) ceil(
+        curand_uniform(&rgen) - pchange[ old_state ]);
+    int matrix_idx = flip * NUM_STATES + old_state ;
+    buf_out[star] = state_matrix[ flip * NUM_STATES + old_state ];
+    printf("neighborhood=%i n=%i i=%i star=%i old_state=%i, flip=%i p=%f matrix_idx=%i\n",
+      neighborhood, n, i, star, old_state, flip, pchange[ old_state], matrix_idx );
+  }
+  rgens[neighborhood] = rgen;
 }
 
 unsigned int
@@ -73,26 +173,41 @@ inspect_sum( output_t *array, int line, int n )
 int
 main()
 {
-  output_t *outputs ;
-  output_t *coutputs;
+  output_t *outs ;
+  output_t *couts1;
+  output_t *couts2;
+  output_t *cstate_matrix;
+  float *cpchange;
   curandStateXORWOW_t *crgens;
 
   unsigned int seed = generate_seed();
 
   const int output_size = STARS * sizeof( output_t );
   const int rgen_size =   NEIGHBORHOODS * sizeof( curandStateXORWOW_t );
+  const int state_matrix_size = NUM_STATES * sizeof( output_t );
+  const int pchange_size = NUM_STATES * sizeof( float );
 
-  cudaMalloc( (void**)&coutputs, output_size );
+  cudaMalloc( (void**)&couts1, output_size );
+  cudaMalloc( (void**)&couts2, output_size );
+  cudaMalloc( (void**)&cstate_matrix, state_matrix_size );
+  cudaMalloc( (void**)&cpchange, pchange_size );
   cudaMalloc( (void**)&crgens, rgen_size );
-  outputs = static_cast<output_t *>(malloc( output_size ));
+  outs = static_cast<output_t *>(calloc(STARS, sizeof(output_t)));
+  memset(outs, 0, output_size);
+
+  cudaMemcpy( couts1, outs, state_matrix_size, cudaMemcpyHostToDevice );
+  cudaMemcpy( cstate_matrix, STATE_MATRIX, state_matrix_size, cudaMemcpyHostToDevice );
+  cudaMemcpy( cpchange, PCHANGE, pchange_size, cudaMemcpyHostToDevice );
+  cudaMemcpy( outs, couts1, state_matrix_size, cudaMemcpyDeviceToHost );
+  inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
 
   init_rands<<<BLOCKS, THREADS_PER_BLOCK>>>( seed, crgens );
-  generate_rands<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, coutputs, NEIGHBORHOOD_STARS );
+  iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
 
-  cudaMemcpy( outputs, coutputs, output_size, cudaMemcpyDeviceToHost );
-  cudaFree( coutputs );
+  cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
+  cudaFree( couts1 );
   cudaFree( crgens );
 
-  inspect_sum( outputs, NEIGHBORHOOD_STARS, STARS );
+  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
   return EXIT_SUCCESS;
 }
