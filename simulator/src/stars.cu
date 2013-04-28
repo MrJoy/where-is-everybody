@@ -8,7 +8,8 @@ const int BLOCKS                  = 128; //2**7
 const int THREADS_EVER            = THREADS_PER_BLOCK * BLOCKS ;//2**12
 
 //const int STARS                   = 1024 * 1024 * 64 ;//2**26
-const int STARS                   = THREADS_EVER * 2;
+const int STARS                   = 1024 * 1024 * 4;//2**16
+//const int STARS                   = THREADS_EVER * 2;
 const int NEIGHBORHOODS           = THREADS_EVER ;
 const int NEIGHBORHOOD_STARS      = STARS / NEIGHBORHOODS ;//2**14
 
@@ -218,7 +219,10 @@ main()
   cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
   //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
 
-  iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
+  for( int i=0; i< 1000; i += 2 ){
+    iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
+    iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts2, couts1, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
+  }
 
   cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
   cudaFree( couts1 );
