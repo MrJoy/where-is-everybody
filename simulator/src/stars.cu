@@ -34,7 +34,7 @@ enum class States : output_t {
 */
 // the code I have: nvcc does not support -std=c++0x.
 // I am refusing to deal with pre c++11 enum.
-//const output_t  INIT = 0;//commented to silence unused variable warning
+const output_t  INIT = 0;
 const output_t  UNINHABITABLE = 1;
 const output_t  INHABITABLE = 2;
 const output_t  CELLULAR = 3;
@@ -118,6 +118,15 @@ generate_rands( curandStateXORWOW_t *rgens, output_t *outs, int n)
 }
 
 __global__ void
+init_buf( output_t *outs, int n)
+{
+  int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
+  for( int i=0; i<n; ++i ) {
+    outs[baseIdx * n + i] = INIT;
+  }
+}
+
+__global__ void
 iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out, int n, output_t *state_matrix, float *pchange )
 {
   int neighborhood = threadIdx.x + blockIdx.x * blockDim.x;
@@ -128,10 +137,13 @@ iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out,
     output_t old_state = buf_in[star];
     unsigned int flip = (unsigned int) ceil(
         curand_uniform(&rgen) - pchange[ old_state ]);
-    int matrix_idx = flip * NUM_STATES + old_state ;
     buf_out[star] = state_matrix[ flip * NUM_STATES + old_state ];
-    printf("neighborhood=%i n=%i i=%i star=%i old_state=%i, flip=%i p=%f matrix_idx=%i\n",
-      neighborhood, n, i, star, old_state, flip, pchange[ old_state], matrix_idx );
+
+    //int matrix_idx = flip * NUM_STATES + old_state ;
+    //printf("neighborhood=%i n=%i i=%i star=%i old_state=%i new_state=%i flip=%i p=%f matrix_idx=%i\n",
+    //  neighborhood, n, i, 
+    //  star, old_state, buf_out[star], flip,
+    //  pchange[ old_state], matrix_idx );
   }
   rgens[neighborhood] = rgen;
 }
@@ -184,7 +196,7 @@ main()
 
   const int output_size = STARS * sizeof( output_t );
   const int rgen_size =   NEIGHBORHOODS * sizeof( curandStateXORWOW_t );
-  const int state_matrix_size = NUM_STATES * sizeof( output_t );
+  const int state_matrix_size = 2 * NUM_STATES * sizeof( output_t );
   const int pchange_size = NUM_STATES * sizeof( float );
 
   cudaMalloc( (void**)&couts1, output_size );
@@ -193,21 +205,28 @@ main()
   cudaMalloc( (void**)&cpchange, pchange_size );
   cudaMalloc( (void**)&crgens, rgen_size );
   outs = static_cast<output_t *>(calloc(STARS, sizeof(output_t)));
-  memset(outs, 0, output_size);
 
-  cudaMemcpy( couts1, outs, state_matrix_size, cudaMemcpyHostToDevice );
   cudaMemcpy( cstate_matrix, STATE_MATRIX, state_matrix_size, cudaMemcpyHostToDevice );
   cudaMemcpy( cpchange, PCHANGE, pchange_size, cudaMemcpyHostToDevice );
-  cudaMemcpy( outs, couts1, state_matrix_size, cudaMemcpyDeviceToHost );
-  inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
 
+  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts1, NEIGHBORHOOD_STARS );
+  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts2, NEIGHBORHOOD_STARS );
   init_rands<<<BLOCKS, THREADS_PER_BLOCK>>>( seed, crgens );
+
+  cudaMemcpy( outs, couts1, output_size, cudaMemcpyDeviceToHost );
+  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
+  cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
+  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
+
   iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
 
   cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
   cudaFree( couts1 );
+  cudaFree( couts2 );
   cudaFree( crgens );
+  cudaFree( cstate_matrix );
+  cudaFree( cpchange );
 
-  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
+  inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
   return EXIT_SUCCESS;
 }
