@@ -1,3 +1,5 @@
+*.sw[mnop]
+*.out
 /simulator/tmp/*
 !/simulator/tmp/.gitkeep
 /simulator/bin/*
