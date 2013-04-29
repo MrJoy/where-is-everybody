@@ -167,6 +167,9 @@ $(INTERMEDIATE_PATH)/test/:
 $(INTERMEDIATE_PATH)/test/hemi.o: $(SOURCE_PATH)/test/hemi.cu $(INTERMEDIATE_PATH)/test/
 	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
 
+$(BUILD_PATH)/test/hemi: $(INTERMEDIATE_PATH)/test/hemi.o $(INTERMEDIATE_PATH)/wie/device.o
+	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
+
 $(INTERMEDIATE_PATH)/test/randoms.o: $(SOURCE_PATH)/test/randoms.cpp $(INTERMEDIATE_PATH)/test/
 	$(GCC) $(CCFLAGS) $(CCINCLUDES) -o $@ -c $<
 
