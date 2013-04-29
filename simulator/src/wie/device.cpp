@@ -38,6 +38,7 @@ WIE::Device::Device()
 
 void WIE::Device::Init()
 {
+#ifndef HEMI_CUDA_DISABLE
   if(deviceID >= 0) {
     deviceID = initRequestedDevice(deviceID);
   } else {
@@ -48,6 +49,9 @@ void WIE::Device::Init()
   properties = fetchDeviceProperties(deviceID);
   bool isUsable = deviceIsUsable(properties);
   assert(isUsable);
+#else
+  deviceID = 0;
+#endif
 
   activate();
 }
@@ -55,15 +59,18 @@ void WIE::Device::Init()
 WIE::Device::~Device()
 {
   activate();
+#ifndef HEMI_CUDA_DISABLE
   cudaDeviceReset();
+#endif
 }
 
 int WIE::Device::initRequestedDevice(int desiredDeviceID)
 {
+#ifndef HEMI_CUDA_DISABLE
   int deviceCount = getDeviceCount();
 
   if(deviceCount == 0) {
-    throw std::runtime_error("No devices supporting CUDA were found.");
+    throw runtime_error("No devices supporting CUDA were found.");
   }
 
   if(desiredDeviceID < 0) {
@@ -71,8 +78,9 @@ int WIE::Device::initRequestedDevice(int desiredDeviceID)
   }
 
   if(desiredDeviceID > deviceCount - 1) {
-    throw std::runtime_error("Requested device ID is not valid.");
+    throw runtime_error("Requested device ID is not valid.");
   }
+#endif
 
   return desiredDeviceID;
 }
@@ -80,9 +88,7 @@ int WIE::Device::initRequestedDevice(int desiredDeviceID)
 // This function returns the best GPU (with maximum GFLOPS)
 int WIE::Device::initBestDevice()
 {
-  // int sm_per_multiproc  = 0;
-  // int max_compute_perf   = 0, max_perf_device   = 0;
-
+#ifndef HEMI_CUDA_DISABLE
   int deviceCount = getDeviceCount();
 
   // Find the best major SM Architecture GPU device...
@@ -132,6 +138,9 @@ int WIE::Device::initBestDevice()
   }
 
   return maxPerfDevice;
+#else
+  return 0;
+#endif
 }
 
 int WIE::Device::convertSMVersion2Cores(int major, int minor)
@@ -153,33 +162,46 @@ int WIE::Device::convertSMVersion2Cores(int major, int minor)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Handy helper methods.
+// TODO: Make some of these static...
 ///////////////////////////////////////////////////////////////////////////////
-void WIE::Device::assertResult(cudaError_t result, const std::string& msg)
+void WIE::Device::assertResult(cudaError_t result, const string& msg)
 {
   if(result != cudaSuccess) {
-    std::ostringstream s;
+    ostringstream s;
     s << msg << ", got cudaError_t [deviceID==" << deviceID << "]: " << result;
-    throw std::runtime_error(s.str());
+    throw runtime_error(s.str());
   }
 }
 
 cudaDeviceProp WIE::Device::fetchDeviceProperties(int desiredDeviceID)
 {
-  cudaDeviceProp deviceProperties;
+  cudaDeviceProp deviceProperties = cudaDevicePropDontCare;
+#ifndef HEMI_CUDA_DISABLE
   assertResult(cudaGetDeviceProperties(&deviceProperties, desiredDeviceID), "Could not get device properties");
+#else
+  desiredDeviceID = desiredDeviceID; // Silence a compiler warning...
+#endif
   return deviceProperties;
 }
 
 bool WIE::Device::deviceIsUsable(cudaDeviceProp deviceProperties)
 {
+#ifndef HEMI_CUDA_DISABLE
   return (deviceProperties.computeMode != cudaComputeModeProhibited) &&
     (deviceProperties.major >= 1);
+#else
+  return true;
+#endif
 }
 
 int WIE::Device::getDeviceCount()
 {
-  int deviceCount;
+  int deviceCount = 0;
+#ifndef HEMI_CUDA_DISABLE
   assertResult(cudaGetDeviceCount(&deviceCount), "Couldn't get device count");
+#else
+  deviceCount = 1;
+#endif
   return deviceCount;
 }
 
@@ -189,5 +211,7 @@ int WIE::Device::getDeviceCount()
 ///////////////////////////////////////////////////////////////////////////////
 void WIE::Device::activate()
 {
+#ifndef HEMI_CUDA_DISABLE
   assertResult(cudaSetDevice(deviceID), "Couldn't activate device");
+#endif
 }

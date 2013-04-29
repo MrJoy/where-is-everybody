@@ -1,14 +1,12 @@
 #ifndef WIE_DEVICE_H
 #define WIE_DEVICE_H
-
 #pragma once
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// CUDA and CURAND includes.
+// CUDA includes.
 ///////////////////////////////////////////////////////////////////////////////
-#include <cuda.h>
-#include <curand.h>
+#include "hemi/hemi.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,6 +23,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace WIE {
   using std::string;
+  using std::endl;
+  using std::ostringstream;
+  using std::runtime_error;
 
   class Device
   {
@@ -34,7 +35,7 @@ namespace WIE {
     ~Device();
 
     void activate();
-    void assertResult(cudaError_t result, const std::string& msg);
+    void assertResult(cudaError_t result, const string& msg);
 
 
   private:
