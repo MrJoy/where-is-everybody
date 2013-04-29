@@ -156,26 +156,57 @@ endif
 ###############################################################################
 # Target rules.
 ###############################################################################
-all: $(BUILD_PATH)/randoms $(BUILD_PATH)/hello $(BUILD_PATH)/stars
 
-$(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
+######################################
+# Test Cases
+######################################
+$(INTERMEDIATE_PATH)/test/:
+	mkdir -p $(INTERMEDIATE_PATH)/test
+	mkdir -p $(BUILD_PATH)/test
+
+$(INTERMEDIATE_PATH)/test/hemi.o: $(SOURCE_PATH)/test/hemi.cu $(INTERMEDIATE_PATH)/test/
 	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o $(INTERMEDIATE_PATH)/wie/device.o $(INTERMEDIATE_PATH)/wie/stopwatch.o
+$(INTERMEDIATE_PATH)/test/randoms.o: $(SOURCE_PATH)/test/randoms.cpp $(INTERMEDIATE_PATH)/test/
+	$(GCC) $(CCFLAGS) $(CCINCLUDES) -o $@ -c $<
+
+$(BUILD_PATH)/test/randoms: $(INTERMEDIATE_PATH)/test/randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
 	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
 
-$(INTERMEDIATE_PATH)/example.o: $(SOURCE_PATH)/example.cu
+
+######################################
+# Playground
+######################################
+$(INTERMEDIATE_PATH)/etc/:
+	mkdir -p $(INTERMEDIATE_PATH)/etc
+	mkdir -p $(BUILD_PATH)/etc
+
+$(INTERMEDIATE_PATH)/etc/hello.o: $(SOURCE_PATH)/etc/hello.cu $(INTERMEDIATE_PATH)/etc/
 	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/example: $(INTERMEDIATE_PATH)/example.o
+$(BUILD_PATH)/etc/hello: $(INTERMEDIATE_PATH)/etc/hello.o $(INTERMEDIATE_PATH)/wie/device.o $(INTERMEDIATE_PATH)/wie/stopwatch.o
 	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
 
+$(INTERMEDIATE_PATH)/etc/example.o: $(SOURCE_PATH)/etc/example.cu $(INTERMEDIATE_PATH)/etc/
+	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
+
+$(BUILD_PATH)/etc/example: $(INTERMEDIATE_PATH)/etc/example.o
+	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
+
+
+######################################
+# Main Code
+######################################
 $(INTERMEDIATE_PATH)/stars.o: $(SOURCE_PATH)/stars.cu
 	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
 
 $(BUILD_PATH)/stars: $(INTERMEDIATE_PATH)/stars.o
 	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
 
+
+######################################
+# Support Code
+######################################
 $(INTERMEDIATE_PATH)/wie/:
 	mkdir -p $(INTERMEDIATE_PATH)/wie
 
@@ -188,11 +219,11 @@ $(INTERMEDIATE_PATH)/wie/stopwatch.o: $(SOURCE_PATH)/wie/stopwatch.cpp $(INTERME
 $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS) $(CCINCLUDES) -o $@ -c $<
 
-$(INTERMEDIATE_PATH)/randoms.o: $(SOURCE_PATH)/randoms.cpp
-	$(GCC) $(CCFLAGS) $(CCINCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/randoms: $(INTERMEDIATE_PATH)/randoms.o $(INTERMEDIATE_PATH)/wie/random.o $(INTERMEDIATE_PATH)/wie/device.o
-	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
+######################################
+# Build Actions
+######################################
+all: $(BUILD_PATH)/stars $(BUILD_PATH)/test/randoms $(BUILD_PATH)/test/hemi $(BUILD_PATH)/etc/hello $(BUILD_PATH)/etc/example
 
 clean:
 	rm -rf tmp/*
