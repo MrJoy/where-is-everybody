@@ -161,7 +161,7 @@ all: $(BUILD_PATH)/randoms $(BUILD_PATH)/hello $(BUILD_PATH)/stars
 $(INTERMEDIATE_PATH)/hello.o: $(SOURCE_PATH)/hello.cu
 	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o
+$(BUILD_PATH)/hello: $(INTERMEDIATE_PATH)/hello.o $(INTERMEDIATE_PATH)/wie/device.o $(INTERMEDIATE_PATH)/wie/stopwatch.o
 	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
 
 $(INTERMEDIATE_PATH)/example.o: $(SOURCE_PATH)/example.cu
