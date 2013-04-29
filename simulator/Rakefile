@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'bundler/setup'
+Bundler.setup
+
+BASE_DIR=File.expand_path(File.dirname(__FILE__))
+require File.join(BASE_DIR, 'lib', 'wie')
+
+desc "Ensure your environment is prepared for building / running this project."
+task :setup do
+  # 1. Ensure CUDA is set up and available.
+  # 2. On Linux, install xutils-dev.
+  # 3. Configure rake-builder.
+end
+
+desc "Display information about the environment, to see if things are configured properly."
+task :debug do
+  require 'wie/debugging'
+  WIE::Debugging::Reflection.show(WIE)
+end
+
+# An interactive shell for working on this very code.
+task :irb do
+  require 'irb'
+  require 'irb/completion'
+  require 'pp'
+  require 'wie/debugging'
+  WIE::Debugging::Loader.init(self)
+  puts "Use 'reload!' to reload code and reprocess everything."
+  puts "Use 'show WIE::SomeModule' to get information about a module."
+  ARGV.clear
+  IRB.start
+end
