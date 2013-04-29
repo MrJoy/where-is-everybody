@@ -240,3 +240,7 @@ test:
 
 full_test:
 	make THOROUGH=1 test
+
+depend:
+	mkdep $(CCFLAGS) $(CCINCLUDES) $(shell find src -name '*.cpp')
+	mkdep -a $(NVFLAGS) $(NVINCLUDES) $(shell find src -name '*.cu')
