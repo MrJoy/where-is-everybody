@@ -66,7 +66,9 @@ NVFLAGS       += -arch=sm_20
 CCOPTFLAGS     ?=
 NVOPTFLAGS     ?=
 CCFLAGS        += -Wall -Wextra -Wunknown-pragmas -Wno-system-headers -fdiagnostics-show-option
-NVFLAGS        +=
+# Always include DEBUG for nvcc so that errors caught by Hemi are always
+# reported.
+NVFLAGS        += -DDEBUG
 # Need to suss out how to ignore system headers with llvm-g++, etc...
 # ifneq ($(DARWIN),)
 #   CCFLAGS      += -pedantic
@@ -87,8 +89,8 @@ endif
 ###############################################################################
 # Common includes and paths for CUDA, and CURAND.
 ###############################################################################
-CCINCLUDES := -I$(CUDA_INC_PATH) -I$(CUDA_SAMPLES_PATH) -I$(SOURCE_PATH)
-NVINCLUDES := -I $(CUDA_INC_PATH) -I $(CUDA_SAMPLES_PATH) -I $(SOURCE_PATH)
+CCINCLUDES := -I$(CUDA_INC_PATH) -I$(SOURCE_PATH) -I$(SOURCE_PATH)/vendor
+NVINCLUDES := -I $(CUDA_INC_PATH) -I $(SOURCE_PATH) -I $(SOURCE_PATH)/vendor
 LDFLAGS    += -lcudart -lcurand
 
 
