@@ -123,6 +123,9 @@ $(INTERMEDIATE_PATH)/wie/:
 $(INTERMEDIATE_PATH)/wie/device.o: $(SOURCE_PATH)/wie/device.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
+$(INTERMEDIATE_PATH)/wie/stopwatch.o: $(SOURCE_PATH)/wie/stopwatch.cpp $(INTERMEDIATE_PATH)/wie/
+	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
+
 $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_PATH)/wie/
 	$(GCC) $(CCFLAGS)$(CCOPTFLAGS) $(CCINCLUDES) -o $@ -c $<
 
