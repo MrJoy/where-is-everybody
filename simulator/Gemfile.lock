@@ -1,10 +1,72 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    archive-tar-minitar (0.5.2)
+    awesome_print (1.0.2)
+    boson (1.2.4)
+    childprocess (0.3.9)
+      ffi (~> 1.0, >= 1.0.11)
+    clipboard (1.0.4)
+    coderay (1.0.9)
+    erubis (2.7.0)
+    every_day_irb (1.4.0)
+    fancy_irb (0.7.3)
+      paint (>= 0.8.1)
+      unicode-display_width (>= 0.1.1)
+    ffi (1.8.1)
+    g (1.7.2)
+    hirb (0.7.1)
+    i18n (0.6.4)
+    interactive_editor (0.0.10)
+      spoon (>= 0.0.1)
+    irbtools (1.4.0)
+      awesome_print (~> 1.0.2)
+      boson (~> 1.2.4)
+      clipboard (~> 1.0.1)
+      coderay (~> 1.0.8)
+      every_day_irb (>= 1.4.0)
+      fancy_irb (>= 0.7.3)
+      g (>= 1.7.1)
+      hirb (~> 0.7.0)
+      interactive_editor (>= 0.0.10)
+      method_locator (>= 0.0.4)
+      method_source (>= 0.8.1)
+      methodfinder (>= 1.2.5)
+      ori (~> 0.1.0)
+      paint (>= 0.8.5)
+      wirb (>= 0.4.3)
+      zucker (>= 12.1)
+    json (1.7.7)
+    log4r (1.1.10)
+    method_locator (0.0.4)
+    method_source (0.8.1)
+    methodfinder (1.2.5)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-ssh (2.2.2)
+    ori (0.1.0)
+    paint (0.8.6)
     rake (10.0.4)
+    spoon (0.0.3)
+      ffi
+    unicode-display_width (0.1.1)
+    vagrant (1.0.7)
+      archive-tar-minitar (= 0.5.2)
+      childprocess (~> 0.3.1)
+      erubis (~> 2.7.0)
+      i18n (~> 0.6.0)
+      json (>= 1.5.1, < 1.8.0)
+      log4r (~> 1.1.9)
+      net-scp (~> 1.0.4)
+      net-ssh (~> 2.2.2)
+    wirb (1.0.1)
+      paint
+    zucker (12.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  irbtools
   rake
+  vagrant

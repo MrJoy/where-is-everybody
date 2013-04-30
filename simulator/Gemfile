@@ -1,3 +1,9 @@
 source 'https://rubygems.org'
 
 gem 'rake'
+gem 'irbtools'
+gem 'vagrant'
+
+# TODO: How do we want to use vagrant?
+# TODO: System-wide install means crufty Vagrant files (system ruby, unknown gem env).
+# TODO: Local gemset install may cram down on our deps.
