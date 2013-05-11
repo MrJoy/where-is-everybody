@@ -38,3 +38,7 @@
 * https://developer.nvidia.com/cuda/pycuda
 * https://developer.nvidia.com/pgi-cuda-cc-x86
 * http://www.mcs.anl.gov/research/projects/iofsl/
+
+## Compatibility
+
+* http://hacks.owlfolio.org/header-survey/
