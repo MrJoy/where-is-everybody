@@ -128,12 +128,12 @@ init_buf( output_t *outs, int n)
 }
 
 __global__ void
-iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out, int n, output_t *state_matrix, float *pchange )
+iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out, int neighborhood_stars, output_t *state_matrix, float *pchange )
 {
   int neighborhood = threadIdx.x + blockIdx.x * blockDim.x;
-  int base = neighborhood * n;
+  int base = neighborhood * neighborhood_stars;
   curandStateXORWOW_t rgen = rgens[neighborhood];
-  for( int i=0; i<n; ++i ) {
+  for( int i=0; i<neighborhood_stars; ++i ) {
     int star = base + i;
     output_t old_state = buf_in[star];
     unsigned int flip = (unsigned int) ceil(
@@ -141,8 +141,8 @@ iterate_states( curandStateXORWOW_t *rgens, output_t *buf_in, output_t *buf_out,
     buf_out[star] = state_matrix[ flip * NUM_STATES + old_state ];
 
     //int matrix_idx = flip * NUM_STATES + old_state ;
-    //printf("neighborhood=%i n=%i i=%i star=%i old_state=%i new_state=%i flip=%i p=%f matrix_idx=%i\n",
-    //  neighborhood, n, i, 
+    //printf("neighborhood=%i neighborhood_stars=%i i=%i star=%i old_state=%i new_state=%i flip=%i p=%f matrix_idx=%i\neighborhood_stars",
+    //  neighborhood, neighborhood_stars, i, 
     //  star, old_state, buf_out[star], flip,
     //  pchange[ old_state], matrix_idx );
   }
