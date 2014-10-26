@@ -13,6 +13,10 @@ const int STARS                   = 1024 * 1024 * 4;//2**16
 const int NEIGHBORHOODS           = THREADS_EVER ;
 const int NEIGHBORHOOD_STARS      = STARS / NEIGHBORHOODS ;//2**14
 
+const int ITERATIONS              = 1000 ;//at 1m years / iteration
+// when debugging this is the minimal
+// const int ITERATIONS              = 2 ;//at 1m years / iteration
+
 typedef uint8_t output_t ;
 const char * OUTPUT_T_FORMAT = "%u " ;
 
@@ -219,7 +223,7 @@ main()
   cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
   //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
 
-  for( int i=0; i< 1000; i += 2 ){
+  for( int i=0; i< ITERATIONS; i += 2 ){
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts2, couts1, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
   }
