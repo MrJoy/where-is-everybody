@@ -18,7 +18,7 @@ const int ITERATIONS              = 1000 ;//at 1m years / iteration
 // const int ITERATIONS              = 2 ;//at 1m years / iteration
 
 typedef uint8_t output_t ;
-const char * OUTPUT_T_FORMAT = "%u " ;
+const char * OUTPUT_T_FORMAT = "%u" ;
 
 /*
  * see notes-20121226.md for description of the semantics of the sim
@@ -163,28 +163,20 @@ generate_seed()
   return seed;
 }
 
-void
-inspect( output_t *array, int line, int n )
-{
-  for( int i=0; i<n; ++i ) {
-    printf( OUTPUT_T_FORMAT, array[i] );
-    if( (i + 1) % line == 0 ){
-      printf( "\n" );
-    }
-  }
-  printf( "\n" );
-}
+#define STAR_STATE_CHAR(x) (int)((output_t)('0') + x)
 
 void
-inspect_sum( output_t *array, int line, int n )
+inspect( const char prefix, const output_t *array, const int line, const int n )
 {
   for( int i=0; i<n; ++i ) {
+    if( i % line == 0 ){
+      putchar(prefix);
+    }
+    putchar(STAR_STATE_CHAR(array[i]));
     if( (i + 1) % line == 0 ){
-      printf( OUTPUT_T_FORMAT, array[i] );
-      printf( "\n" );
+      putchar('\n');
     }
   }
-  printf( "\n" );
 }
 
 int
@@ -194,6 +186,7 @@ main()
   output_t *couts1;
   output_t *couts2;
   output_t *cstate_matrix;
+  output_t *cstate_matrix_shadow;
   float *cpchange;
   curandStateXORWOW_t *crgens;
 
@@ -209,7 +202,6 @@ main()
   cudaMalloc( (void**)&cstate_matrix, state_matrix_size );
   cudaMalloc( (void**)&cpchange, pchange_size );
   cudaMalloc( (void**)&crgens, rgen_size );
-  outs = static_cast<output_t *>(calloc(STARS, sizeof(output_t)));
 
   cudaMemcpy( cstate_matrix, STATE_MATRIX, state_matrix_size, cudaMemcpyHostToDevice );
   cudaMemcpy( cpchange, PCHANGE, pchange_size, cudaMemcpyHostToDevice );
@@ -218,23 +210,31 @@ main()
   init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts2, NEIGHBORHOOD_STARS );
   init_rands<<<BLOCKS, THREADS_PER_BLOCK>>>( seed, crgens );
 
+
+  cudaHostAlloc(&cstate_matrix_shadow, state_matrix_size, sizeof(output_t));
+  cudaMemcpy( cstate_matrix_shadow, cstate_matrix, state_matrix_size, cudaMemcpyDeviceToHost );
+  inspect( 'S', STATE_CHANGES, 2, state_matrix_size);
+  inspect( 's', cstate_matrix_shadow, 2, state_matrix_size);
+
+  cudaHostAlloc(&outs, STARS, sizeof(output_t));
   cudaMemcpy( outs, couts1, output_size, cudaMemcpyDeviceToHost );
-  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
+  inspect( 'x', outs, NEIGHBORHOOD_STARS, STARS );
   cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
-  //inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
+  inspect( 'X', outs, NEIGHBORHOOD_STARS, STARS );
 
   for( int i=0; i< ITERATIONS; i += 2 ){
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts2, couts1, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
+    //debug
+    cudaMemcpy( outs, couts1, output_size, cudaMemcpyDeviceToHost );
+    inspect( 'y', outs, NEIGHBORHOOD_STARS, STARS );
   }
 
-  cudaMemcpy( outs, couts2, output_size, cudaMemcpyDeviceToHost );
   cudaFree( couts1 );
   cudaFree( couts2 );
   cudaFree( crgens );
   cudaFree( cstate_matrix );
   cudaFree( cpchange );
 
-  inspect_sum( outs, NEIGHBORHOOD_STARS, STARS );
   return EXIT_SUCCESS;
 }
