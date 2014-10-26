@@ -111,18 +111,6 @@ init_rands(unsigned int seed, curandStateXORWOW_t *rgens )
 }
 
 __global__ void
-generate_rands( curandStateXORWOW_t *rgens, output_t *outs, int n)
-{
-  int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
-  curandStateXORWOW_t rgen = rgens[baseIdx];
-  for( int i=0; i<n; ++i ) {
-    outs[baseIdx * n + i] = static_cast<output_t>(
-        ceil( curand_uniform( &rgen ) - 0.5 ));
-  }
-  rgens[baseIdx] = rgen;
-}
-
-__global__ void
 init_buf( output_t *outs, int n)
 {
   int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
