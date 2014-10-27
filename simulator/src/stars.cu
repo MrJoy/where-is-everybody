@@ -3,9 +3,7 @@
 #include "curand_kernel.h"
 #include "stars_config.h"
 #include "stars_helpers.h"
-
-extern unsigned int generate_seed();
-extern void inspect( const char prefix, const output_t *array, const int line, const int n );
+#include "stars_helpers_c.h"
 
 int
 main()
