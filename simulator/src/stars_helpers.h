@@ -1,5 +1,5 @@
-//TODO: move me.
-typedef uint8_t output_t ;
+//required only for output_t
+#include "stars_config.h"
 
 #ifndef _STAR_HELPERS_
 #define _STAR_HELPERS_ 1
