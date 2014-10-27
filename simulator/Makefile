@@ -200,10 +200,16 @@ $(BUILD_PATH)/etc/example: $(INTERMEDIATE_PATH)/etc/example.o
 ######################################
 # Main Code
 ######################################
-$(INTERMEDIATE_PATH)/stars.o: $(SOURCE_PATH)/stars.cu
-	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $<
+$(INTERMEDIATE_PATH)/stars_helpers_c.o: $(SOURCE_PATH)/stars_helpers_c.cpp
+	$(GCC) $(CCFLAGS) $(CCINCLUDES) -o $@ -c $<
 
-$(BUILD_PATH)/stars: $(INTERMEDIATE_PATH)/stars.o
+$(INTERMEDIATE_PATH)/stars_helpers.o: $(SOURCE_PATH)/stars_helpers.cu
+	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $^
+
+$(INTERMEDIATE_PATH)/stars.o: $(SOURCE_PATH)/stars.cu
+	$(NVCC) $(NVFLAGS) $(NVINCLUDES) -o $@ -c $^
+
+$(BUILD_PATH)/stars: $(INTERMEDIATE_PATH)/stars_helpers_c.o $(INTERMEDIATE_PATH)/stars_helpers.o $(INTERMEDIATE_PATH)/stars.o
 	$(GCC) $(CCFLAGS) -o $@ $+ $(LDFLAGS)
 
 

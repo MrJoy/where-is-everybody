@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "curand_kernel.h"
-
+#include "stars_helpers.h"
 
 const int THREADS_PER_BLOCK       = 32; //2**5
 const int BLOCKS                  = 128; //2**7
@@ -17,8 +17,10 @@ const int ITERATIONS              = 1000 ;//at 1m years / iteration
 // when debugging this is the minimal
 // const int ITERATIONS              = 2 ;//at 1m years / iteration
 
-typedef uint8_t output_t ;
-const char * OUTPUT_T_FORMAT = "%u" ;
+//TODO: this is defined in stars_helpers.h but it should be in a
+//different shared header:
+//
+//typedef uint8_t output_t ;
 
 /*
  * see notes-20121226.md for description of the semantics of the sim
@@ -104,102 +106,8 @@ const float P_CHANGE [ NUM_STATES ] =
   pC,  //p(change) from SPACE_FARING
 };
 
-
-__global__ void
-init_rands(unsigned int seed, curandStateXORWOW_t *rgens )
-{
-  int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
-  curand_init( seed, baseIdx, 0, & rgens[baseIdx]);
-  //printf( "init_rands %i %u thr=%i blck=%i blckdim=%i\n", baseIdx, seed, threadIdx.x, blockIdx.x, blockDim.x );
-}
-
-__global__ void
-init_buf( output_t *outs, int n)
-{
-  int baseIdx = threadIdx.x + blockIdx.x * blockDim.x;
-  for( int i=0; i<n; ++i ) {
-    outs[baseIdx * n + i] = PROTOSTAR;
-  }
-}
-
-__global__ void
-iterate_states(
-    curandStateXORWOW_t *rgens,
-    output_t *buf_in,
-    output_t *buf_out,
-    int neighborhood_stars,
-    output_t *state_matrix,
-    float *pchange//,
-    //output_t *buf_old_states,
-    //float *buf_rnds,
-    //unsigned int *_flips
-    )
-{
-  int neighborhood = threadIdx.x + blockIdx.x * blockDim.x;
-  int base = neighborhood * neighborhood_stars;
-  curandStateXORWOW_t rgen = rgens[neighborhood];
-  for( int i=0; i<neighborhood_stars; ++i ) {
-    const int star = base + i;
-    output_t old_state = buf_in[star];
-
-    //float rnd = curand_uniform(&rgen);
-    //float p = pchange[ old_state ];
-    //unsigned int flip = 1 - (unsigned int) ceil( rnd - p );
-    //unsigned int new_state_index = old_state * 2 + flip ;
-    //output_t new_state = state_matrix[ new_state_index ];
-    //buf_out[star] = new_state;
-    //buf_out[star] = i % NUM_STATES;
-
-    //printf("neighborhood=%i neighborhood_stars=%i i=%i star=%i old_state=%i rnd=%f p=%f flip=%i new_state_index=%i new_state=%i\n",
-    //  neighborhood,
-    //  neighborhood_stars,
-    //  i,
-    //  star,
-    //  old_state,
-    //  rnd,
-    //  p,
-    //  flip,
-    //  new_state_index,
-    //  new_state
-    //  );
-    //
-    // the the inner loop was before I hacked in the debug version above
-    //
-    buf_out[star] = state_matrix[
-        old_state * 2 +
-        (1 -
-          (unsigned int) ceil(curand_uniform(&rgen) -
-          pchange[ old_state ]))
-      ];
-  }
-  rgens[neighborhood] = rgen;
-}
-
-unsigned int
-generate_seed()
-{
-  FILE* randomSource = fopen("/dev/random", "rb");
-  unsigned int seed;
-  int recordsRead = fread( &seed, sizeof(unsigned int), 1, randomSource );
-  fclose( randomSource );
-  return seed;
-}
-
-#define STAR_STATE_CHAR(x) (int)((output_t)('0') + x)
-
-void
-inspect( const char prefix, const output_t *array, const int line, const int n )
-{
-  for( int i=0; i<n; ++i ) {
-    if( i % line == 0 ){
-      putchar(prefix);
-    }
-    putchar(STAR_STATE_CHAR(array[i]));
-    if( (i + 1) % line == 0 ){
-      putchar('\n');
-    }
-  }
-}
+extern unsigned int generate_seed();
+extern void inspect( const char prefix, const output_t *array, const int line, const int n );
 
 int
 main()
@@ -231,8 +139,8 @@ main()
   cudaMemcpy( cpchange, P_CHANGE, pchange_size, cudaMemcpyHostToDevice );
 
 
-  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts1, NEIGHBORHOOD_STARS );
-  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts2, NEIGHBORHOOD_STARS );
+  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts1, PROTOSTAR, NEIGHBORHOOD_STARS );
+  init_buf<<<BLOCKS, THREADS_PER_BLOCK>>>( couts2, PROTOSTAR, NEIGHBORHOOD_STARS );
   init_rands<<<BLOCKS, THREADS_PER_BLOCK>>>( seed, crgens );
 
 
