@@ -1,8 +1,7 @@
-//required only for output_t
-#include "stars_config.h"
-
 #ifndef _STAR_HELPERS_
 #define _STAR_HELPERS_ 1
+//required only for output_t
+#include "stars_config.h"
 
 __global__ void init_rands(unsigned int seed, curandStateXORWOW_t *rgens );
 
