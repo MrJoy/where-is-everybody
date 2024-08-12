@@ -78,7 +78,8 @@ else
 endif
 # Limiting architecture to sm_20 because our main target is EC2's cg1.4xlarge
 # which has a pair of Fermi M2050s.
-NVFLAGS       += -arch=sm_20
+# NVFLAGS       += -arch=sm_20
+NVFLAGS       += -arch=native
 
 
 ###############################################################################
@@ -235,7 +236,8 @@ $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_
 ######################################
 # Build Actions
 ######################################
-all: $(BUILD_PATH)/stars $(BUILD_PATH)/test/randoms $(BUILD_PATH)/test/hemi $(BUILD_PATH)/etc/hello $(BUILD_PATH)/etc/example
+# all: $(BUILD_PATH)/stars $(BUILD_PATH)/test/randoms $(BUILD_PATH)/test/hemi $(BUILD_PATH)/etc/hello $(BUILD_PATH)/etc/example
+all: $(BUILD_PATH)/stars
 
 clean:
 	rm -rf tmp/*
