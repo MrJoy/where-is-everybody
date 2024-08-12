@@ -54,7 +54,7 @@ main()
   for( int i=0; i< ITERATIONS; i += 2 ){
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts1, couts2, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
     iterate_states<<<BLOCKS, THREADS_PER_BLOCK>>>( crgens, couts2, couts1, NEIGHBORHOOD_STARS, cstate_matrix, cpchange );
-    //debug
+    //TODO switch to an explicit cuda 3d structure, then compute infections
     cudaMemcpy( outs, couts1, output_size, cudaMemcpyDeviceToHost );
     inspect( 'y', outs, NEIGHBORHOOD_STARS, STARS );
   }
