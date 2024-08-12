@@ -38,8 +38,8 @@ iterate_states(
     buf_out[star] = state_matrix[
         old_state * 2 +
         (1 -
-          (unsigned int) ceil(curand_uniform(&rgen) -
-          pchange[ old_state ]))
+          (unsigned int) ceil(curand_uniform(&rgen) - pchange[ old_state ])
+        )
       ];
   }
   rgens[neighborhood] = rgen;
