@@ -237,6 +237,8 @@ $(INTERMEDIATE_PATH)/wie/random.o: $(SOURCE_PATH)/wie/random.cpp $(INTERMEDIATE_
 # Build Actions
 ######################################
 # all: $(BUILD_PATH)/stars $(BUILD_PATH)/test/randoms $(BUILD_PATH)/test/hemi $(BUILD_PATH)/etc/hello $(BUILD_PATH)/etc/example
+default: all
+
 all: $(BUILD_PATH)/stars
 
 clean:
